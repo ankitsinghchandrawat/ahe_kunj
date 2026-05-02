@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KrishiMind v3 — Smart Agriculture Advisory</title>
+  <meta name="description" content="AI-powered agricultural advisory agent for crop recommendation, irrigation planning, pest detection, and market analysis."/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="logo">
+    <span class="logo-icon">🌾</span>
+    <div>
+      <div class="logo-text">KrishiMind</div>
+      <div class="logo-sub">Smart Agriculture Advisory</div>
+    </div>
+  </div>
+  <div class="status-badge" id="status-badge" style="display: none;">
+    <span class="status-dot"></span>
+    <span id="status-text">Connecting...</span>
+  </div>
+</header>
+
+<!-- ── Main Container ── -->
+<div class="container">
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="nav-item active" data-tab="crop"       onclick="showTab('crop')">
+      <span class="nav-icon">🌱</span> Crop Advisor
+    </div>
+    <div class="nav-item" data-tab="irrigation" onclick="showTab('irrigation')">
+      <span class="nav-icon">💧</span> Irrigation
+    </div>
+    <div class="nav-item" data-tab="pest"       onclick="showTab('pest')">
+      <span class="nav-icon">🔬</span> Pest Detect
+    </div>
+    <div class="nav-item" data-tab="market"     onclick="showTab('market')">
+      <span class="nav-icon">📈</span> Market Pulse
+    </div>
+    <div class="nav-item" data-tab="advisory"   onclick="showTab('advisory')">
+      <span class="nav-icon">🤖</span> Full Advisory
+    </div>
+    <div class="nav-item" data-tab="ask"        onclick="showTab('ask')">
+      <span class="nav-icon">💬</span> Ask AI
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="main">
+
+    <!-- ══ CROP TAB ══════════════════════════════════════════════════════ -->
+    <div id="tab-crop" class="tab-pane">
+      <div class="card">
+        <div class="card-title">🌱 Crop Recommendation Engine</div>
+        <p class="card-desc">
+          Enter your soil NPK values and climate conditions to get AI-powered crop recommendations.
+        </p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nitrogen N (kg/ha)</label>
+            <input type="number" id="c-N" value="80" min="0" max="500"/>
+          </div>
+          <div class="form-group">
+            <label>Phosphorus P (kg/ha)</label>
+            <input type="number" id="c-P" value="40" min="0" max="300"/>
+          </div>
+          <div class="form-group">
+            <label>Potassium K (kg/ha)</label>
+            <input type="number" id="c-K" value="40" min="0" max="300"/>
+          </div>
+          <div class="form-group">
+            <label>Temperature (°C)</label>
+            <input type="number" id="c-temp" value="25" min="-10" max="55"/>
+          </div>
+          <div class="form-group">
+            <label>Soil pH</label>
+            <input type="number" id="c-pH" value="6.5" min="0" max="14" step="0.1"/>
+          </div>
+          <div class="form-group">
+            <label>Humidity (%)</label>
+            <input type="number" id="c-hum" value="60" min="0" max="100"/>
+          </div>
+          <div class="form-group">
+            <label>Rainfall (mm/month)</label>
+            <input type="number" id="c-rain" value="80" min="0" max="500"/>
+          </div>
+          <div class="form-group">
+            <label>Season</label>
+            <select id="c-season">
+              <option value="">Auto-detect</option>
+              <option value="Kharif">Kharif (Jun–Oct)</option>
+              <option value="Rabi">Rabi (Nov–Mar)</option>
+              <option value="Zaid">Zaid (Mar–Jun)</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-wrap">
+          <button class="btn btn-primary" id="crop-btn" onclick="runCrop()">
+            🌾 Get Recommendations
+          </button>
+        </div>
+      </div>
+      <div id="crop-result" class="hidden"></div>
+    </div>
+
+    <!-- ══ IRRIGATION TAB ════════════════════════════════════════════════ -->
+    <div id="tab-irrigation" class="tab-pane hidden">
+      <div class="card">
+        <div class="card-title">💧 Dynamic Irrigation Planner</div>
+        <p class="card-desc">
+          Uses <strong style="color:var(--primary)">ETc = Kc × ET₀</strong> (Hargreaves method) with live weather data.
+        </p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Crop</label>
+            <select id="i-crop">
+              <option value="wheat">Wheat</option>
+              <option value="rice">Rice</option>
+              <option value="maize">Maize</option>
+              <option value="cotton">Cotton</option>
+              <option value="sugarcane">Sugarcane</option>
+              <option value="soybean">Soybean</option>
+              <option value="chickpea">Chickpea</option>
+              <option value="mustard">Mustard</option>
+              <option value="tomato">Tomato</option>
+              <option value="onion">Onion</option>
+              <option value="groundnut">Groundnut</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Location (City, State)</label>
+            <input type="text" id="i-loc" value="Delhi" placeholder="e.g. Nagpur, Maharashtra"/>
+          </div>
+          <div class="form-group">
+            <label>Soil Type</label>
+            <select id="i-soil">
+              <option value="loamy">Loamy</option>
+              <option value="sandy">Sandy</option>
+              <option value="clay">Clay</option>
+              <option value="black">Black (Vertisol)</option>
+              <option value="red">Red (Laterite)</option>
+              <option value="alluvial">Alluvial</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Land Area (Acres)</label>
+            <input type="number" id="i-acres" value="1" min="0.1" max="1000" step="0.5"/>
+          </div>
+        </div>
+        <div class="btn-wrap">
+          <button class="btn btn-primary" id="irr-btn" onclick="runIrrigation()">
+            💧 Generate Schedule
+          </button>
+        </div>
+      </div>
+      <div id="irr-result" class="hidden"></div>
+    </div>
+
+    <!-- ══ PEST TAB ══════════════════════════════════════════════════════ -->
+    <div id="tab-pest" class="tab-pane hidden">
+      <div class="card">
+        <div class="card-title">🔬 Vision-Based Pest Detection</div>
+        <p class="card-desc">
+          Upload a leaf or crop photo for AI-powered pest/disease identification.
+        </p>
+        <div class="form-group" style="margin-bottom:24px;max-width:320px;margin-left:auto;margin-right:auto;">
+          <label>Crop Name (optional)</label>
+          <input type="text" id="p-crop" placeholder="e.g. wheat, tomato"/>
+        </div>
+        <div class="upload-zone" id="drop-zone">
+          <div class="upload-icon">📷</div>
+          <div id="drop-hint" style="color:var(--text-muted);font-size:15px">
+            Drag & drop a leaf image here, or click to upload
+          </div>
+          <img id="pest-preview" class="preview-img hidden" src="" alt="preview"/>
+          <input type="file" id="pest-file" accept="image/*" class="hidden"/>
+        </div>
+        <div class="btn-wrap">
+          <button class="btn btn-primary" id="pest-btn" onclick="runPest()">
+            🔍 Detect Pest
+          </button>
+        </div>
+      </div>
+      <div id="pest-result" class="hidden"></div>
+    </div>
+
+    <!-- ══ MARKET TAB ════════════════════════════════════════════════════ -->
+    <div id="tab-market" class="tab-pane hidden">
+      <div class="card">
+        <div class="card-title">📈 Market Pulse — Price Forecasting</div>
+        <p class="card-desc">
+          4-week price forecast with MSP comparison and SELL / HOLD recommendation.
+        </p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Crop</label>
+            <select id="m-crop">
+              <option value="wheat">Wheat</option>
+              <option value="rice">Rice</option>
+              <option value="maize">Maize</option>
+              <option value="soybean">Soybean</option>
+              <option value="groundnut">Groundnut</option>
+              <option value="cotton">Cotton</option>
+              <option value="mustard">Mustard</option>
+              <option value="sugarcane">Sugarcane</option>
+              <option value="chickpea">Chickpea</option>
+              <option value="onion">Onion</option>
+              <option value="tomato">Tomato</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Region / State</label>
+            <select id="m-region">
+              <option value="Punjab">Punjab</option>
+              <option value="Haryana">Haryana</option>
+              <option value="Uttar Pradesh">Uttar Pradesh</option>
+              <option value="Madhya Pradesh">Madhya Pradesh</option>
+              <option value="Rajasthan">Rajasthan</option>
+              <option value="Gujarat">Gujarat</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Andhra Pradesh">Andhra Pradesh</option>
+              <option value="West Bengal">West Bengal</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-wrap">
+          <button class="btn btn-primary" id="mkt-btn" onclick="runMarket()">
+            📊 Get Market Trend
+          </button>
+        </div>
+      </div>
+      <div id="mkt-result" class="hidden"></div>
+    </div>
+
+    <!-- ══ ADVISORY TAB ══════════════════════════════════════════════════ -->
+    <div id="tab-advisory" class="tab-pane hidden">
+      <div class="card">
+        <div class="card-title">🤖 Full Agentic Advisory Loop</div>
+        <p class="card-desc">
+          All 3 agents run together — Crop + Irrigation + Market — for a complete farm plan.
+        </p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Farmer Name</label>
+            <input type="text" id="a-name" value="Raju Sharma" placeholder="Your name"/>
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="a-loc" value="Nagpur, Maharashtra"/>
+          </div>
+          <div class="form-group">
+            <label>Soil Type</label>
+            <select id="a-soil">
+              <option value="black">Black (Vertisol)</option>
+              <option value="loamy">Loamy</option>
+              <option value="sandy">Sandy</option>
+              <option value="clay">Clay</option>
+              <option value="red">Red</option>
+              <option value="alluvial">Alluvial</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Season</label>
+            <select id="a-season">
+              <option value="Kharif">Kharif</option>
+              <option value="Rabi">Rabi</option>
+              <option value="Zaid">Zaid</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Land (Acres)</label>
+            <input type="number" id="a-acres" value="3" min="0.1"/>
+          </div>
+          <div class="form-group">
+            <label>Nitrogen N</label>
+            <input type="number" id="a-N" value="80"/>
+          </div>
+          <div class="form-group">
+            <label>Phosphorus P</label>
+            <input type="number" id="a-P" value="40"/>
+          </div>
+          <div class="form-group">
+            <label>Potassium K</label>
+            <input type="number" id="a-K" value="40"/>
+          </div>
+          <div class="form-group">
+            <label>Soil pH</label>
+            <input type="number" id="a-pH" value="6.5" step="0.1"/>
+          </div>
+          <div class="form-group">
+            <label>Temperature (°C)</label>
+            <input type="number" id="a-temp" value="28"/>
+          </div>
+        </div>
+        <div class="btn-wrap">
+          <button class="btn btn-primary" id="adv-btn" onclick="runAdvisory()">
+            🚀 Run Full Advisory
+          </button>
+        </div>
+      </div>
+      <div id="adv-result" class="hidden"></div>
+    </div>
+
+    <!-- ══ ASK TAB ═══════════════════════════════════════════════════════ -->
+    <div id="tab-ask" class="tab-pane hidden">
+      <div class="card">
+        <div class="card-title">💬 Ask KrishiMind AI</div>
+        <p class="card-desc">
+          Ask anything in plain language — the AI routes to the right agent automatically.
+        </p>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Your Question</label>
+          <textarea id="ask-input" rows="4" placeholder="e.g. Which crop should I grow this Rabi season? / What is the wheat price in Punjab? / When should I irrigate my rice field?"></textarea>
+        </div>
+        <div style="font-size:14px;color:var(--text-muted);margin-bottom:20px;text-align:center;">
+          Try: "best crop for clay soil with high nitrogen" · "wheat price in Haryana" · "when to irrigate maize"
+        </div>
+        <div class="btn-wrap">
+          <button class="btn btn-primary" id="ask-btn" onclick="runAsk()">
+            💬 Ask AI
+          </button>
+        </div>
+      </div>
+      <div id="ask-result" class="hidden"></div>
+    </div>
+
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
