@@ -33,6 +33,7 @@ from agents.crop_agent  import recommend_crops
 from agents.irrigation  import plan_irrigation
 from agents.pest_cv     import detect_pest
 from agents.market      import get_market_trend
+import auth
 
 # ══════════════════════════════════════════════════════════════════════════════
 # FastAPI App
@@ -48,6 +49,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+app.include_router(auth.router)
 
 app.add_middleware(
     CORSMiddleware,

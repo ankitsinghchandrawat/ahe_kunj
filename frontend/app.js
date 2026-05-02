@@ -387,9 +387,108 @@ async function runAsk() {
   setLoading('ask-btn', false);
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// AUTHENTICATION LOGIC
+// ══════════════════════════════════════════════════════════════════════════
+function toggleAuth(view) {
+  if (view === 'login') {
+    document.getElementById('login-card').classList.remove('hidden');
+    document.getElementById('signup-card').classList.add('hidden');
+  } else {
+    document.getElementById('login-card').classList.add('hidden');
+    document.getElementById('signup-card').classList.remove('hidden');
+  }
+}
+
+async function login() {
+  const email = document.getElementById('l-email').value;
+  const password = document.getElementById('l-pass').value;
+  setLoading('login-btn', true);
+  try {
+    const res = await fetch(`${API}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('krishimind_token', data.access_token);
+      checkAuth();
+    } else {
+      const errEl = document.getElementById('login-error');
+      errEl.textContent = data.detail || 'Login failed';
+      errEl.classList.remove('hidden');
+    }
+  } catch (e) {
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = e.message;
+    errEl.classList.remove('hidden');
+  }
+  setLoading('login-btn', false);
+}
+
+async function signup() {
+  const name = document.getElementById('s-name').value;
+  const email = document.getElementById('s-email').value;
+  const password = document.getElementById('s-pass').value;
+  setLoading('signup-btn', true);
+  try {
+    const res = await fetch(`${API}/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('krishimind_token', data.access_token);
+      checkAuth();
+    } else {
+      const errEl = document.getElementById('signup-error');
+      errEl.textContent = data.detail || 'Signup failed';
+      errEl.classList.remove('hidden');
+    }
+  } catch (e) {
+    const errEl = document.getElementById('signup-error');
+    errEl.textContent = e.message;
+    errEl.classList.remove('hidden');
+  }
+  setLoading('signup-btn', false);
+}
+
+function logout() {
+  localStorage.removeItem('krishimind_token');
+  checkAuth();
+}
+
+async function checkAuth() {
+  const token = localStorage.getItem('krishimind_token');
+  if (!token) {
+    document.getElementById('app-dashboard').style.display = 'none';
+    document.getElementById('logout-btn').style.display = 'none';
+    document.getElementById('app-auth').style.display = 'block';
+    return;
+  }
+  
+  try {
+    const res = await fetch(`${API}/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      document.getElementById('app-auth').style.display = 'none';
+      document.getElementById('app-dashboard').style.display = 'block';
+      document.getElementById('logout-btn').style.display = 'inline-block';
+    } else {
+      logout();
+    }
+  } catch (e) {
+    logout();
+  }
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   checkHealth();
+  checkAuth();
   setupPestDrop();
   showTab('crop');
 
